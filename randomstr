@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+
+import sys, hashlib
+
+HQ_RND_LEN = 64
+LOWER_ALPHA = 'abcdefghijklmnopqrstuvwxyz'
+UPPER_ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+ALPHA = LOWER_ALPHA + UPPER_ALPHA
+
+def help(argv):
+    help_msg = '''\
+Usage: {script} [options] length
+
+  Generate random string from character pool
+
+  Options:
+    --help, -h          Show this message
+    --stdin             Character pool from stdin
+    --mask              Masked output with md5
+
+  Options for character pool:
+    --number, -n        Use numbers
+    --alpha, -a         Use upper and lower alpha
+    --upper, -u         Use upper alpha
+    --lower, -l         Use lower alpha
+    --underscore, -U    Use underscore
+'''.format(script = argv[0])
+    print(help_msg)
+
+def main(argv):
+    length = -1
+    seed = ''
+    masked = False
+
+    for arg in argv[1:]:
+        if arg == '--stdin':
+            seed += sys.stdin.read()
+        elif arg == '--mask':
+            masked = True
+        elif arg == '--number' or arg == '-n':
+            seed += ''.join(map(str, range(10)))
+        elif arg == '--alpha' or arg == '-a':
+            seed += ALPHA
+        elif arg == '--upper' or arg == '-u':
+            seed += UPPER_ALPHA
+        elif arg == '--lower' or arg == '-l':
+            seed += LOWER_ALPHA
+        elif arg == '--underscore' or arg == '-U':
+            seed += '_'
+        elif arg == '--help' or arg == '-h':
+            help(argv)
+            exit()
+        else:
+            try:
+                length = int(arg)
+            except ValueError:
+                pass
+
+    if len(seed) == 0:
+        seed = ''.join(map(chr, range(ord(' '), ord('~')) ))
+
+    if length == -1:
+        sys.stderr.write('You must specify a length\n')
+        exit(1)
+
+    hq_rnd_len = HQ_RND_LEN + length // 16
+    random = open('/dev/random', 'rb')
+    hq_rnd = bytearray(random.read(hq_rnd_len))
+    random.close()
+
+    urandom = open('/dev/urandom', 'rb')
+    rnd = bytearray(urandom.read(length))
+    urandom.close()
+
+    for i in range(length):
+        I = i % hq_rnd_len
+        rnd[i] ^= hq_rnd[I]
+        hq_rnd[I] = (rnd[i] + 17) & 0xFF
+
+    N = len(seed)
+    output = ''
+    for n in rnd:
+        output += seed[n % N]
+
+    if masked:
+        md5sum = hashlib.md5(output.encode()).hexdigest()
+        for i in range(length):
+            I = i % hq_rnd_len
+            rnd[i] ^= hq_rnd[I]
+            hq_rnd[I] = (rnd[i] + 17) & 0xFF
+        for i in range(3):
+            pass
+        print('Unsupported')
+
+    else:
+        print(output, end = '')
+
+if __name__ == '__main__':
+    main(sys.argv)
