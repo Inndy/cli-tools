@@ -1,0 +1,175 @@
+#!/usr/bin/env python3
+
+import cryptacular.pbkdf2
+import fuzzywuzzy.fuzz
+import getpass
+import json
+import os
+import sys
+
+class PasswordManager(object):
+    def __init__(self, db):
+        self._pwdmgr = cryptacular.pbkdf2.PBKDF2PasswordManager()
+        self._pwdmgr.ROUNDS = 0x10000
+        self.db_path = db
+        if os.path.isfile(db):
+            self.data = json.load(open(db))
+        elif not os.path.exists(db):
+            self.data = {'entry': []}
+        else:
+            raise Exception('database can not be readed ({})'.format(db))
+
+    def save(self):
+        '''
+        Save database
+        '''
+        json.dump(self.data, open(self.db_path, 'w'))
+
+    def add_password(self, name, password):
+        '''
+        Add a password into database
+        '''
+
+        password = self._pwdmgr.encode(password)
+        self.data['entry'].append((name, password))
+
+    def del_password(self, name):
+        '''
+        Delete a password
+        '''
+
+        entry = self.find_password(name)
+        if entry:
+            index = self.data['entry'].index(entry)
+            del self.data['entry'][index]
+
+    def search_password(self, keyword):
+        '''
+        Search a name in password database, uses fuzzy match algorithm
+        '''
+
+        result = []
+        for rec in self.data['entry']:
+            ratio = fuzzywuzzy.fuzz.ratio(rec[0], keyword)
+            if ratio > 60:
+                result.append([ratio] + rec)
+        return sorted(result, key = lambda x: x[0])
+
+    def list_password(self):
+        '''
+        List all passwords
+        '''
+
+        return self.data['entry']
+
+    def find_password(self, name):
+        '''
+        Find a entry
+        '''
+
+        for entry in self.data['entry']:
+            if entry[0] == name:
+                return entry
+        return None
+
+    def check_password(self, name, password):
+        '''
+        Check a password if it's right
+        '''
+
+        entry = self.find_password(name)
+        hashed = entry[1]
+        return self._pwdmgr.check(hashed, password)
+
+    def set_password(self, name, password):
+        '''
+        Update or create password
+        '''
+
+        entry = self.find_password(name)
+        if entry:
+            entry[1] = password
+        else:
+            self.add_password(name, password)
+
+def _init_password_manager():
+    home = os.getenv('HOME')
+    db = os.path.join(home, '.password_db')
+    return PasswordManager(db)
+
+def add(name, password = None):
+    '''
+    Add a password
+    '''
+    if password == None:
+        password = getpass.getpass('Input password: ')
+        password2 = getpass.getpass('Check password: ')
+        if password != password2:
+            print('Password not match', file = sys.stderr)
+            return 'Failed'
+    mgr = _init_password_manager()
+    mgr.add_password(name, password)
+    mgr.save()
+    return 'Success'
+
+def search(name):
+    '''
+    Fuzzy search password
+    '''
+    mgr = _init_password_manager()
+    result = mgr.search_password(name)
+    result = [('Ratio', 'Name', 'Hash')] + list(result)
+    for r in result:
+        print('{0:<8}{1:32}{2}'.format(*r))
+
+def listall():
+    '''
+    List all passwords
+    '''
+    mgr = _init_password_manager()
+    result = mgr.list_password()
+    result = [('Name', 'Hash')] + list(result)
+    for r in result:
+        print('{0:32}{1}'.format(*r))
+
+def update(name, password = None):
+    if password == None:
+        password = getpass.getpass('Input password: ')
+        password2 = getpass.getpass('Check password: ')
+        if password != password2:
+            print('Password not match', file = sys.stderr)
+            return 'Failed'
+    mgr = _init_password_manager()
+    mgr.set_password(name, password)
+    mgr.save()
+    return 'Success'
+
+def check(name, password = None):
+    '''
+    Test a password
+    '''
+    if password == None:
+        password = getpass.getpass('Input password: ')
+    mgr = _init_password_manager()
+    result = mgr.check_password(name, password)
+    return 'Correct' if result else 'Incorrect'
+
+def delete(name):
+    '''
+    Delete a password
+    '''
+
+    mgr = _init_password_manager()
+    result = mgr.find_password(name)
+    if not result:
+        return 'Not found'
+    r = input('Do you want to delete entry "{name}"?'.format(name = name))
+    if r and (r[0] == 'y' or r[0] == 'Y'):
+        mgr.del_password(name)
+        mgr.save()
+        return 'Success'
+    else:
+        return 'Not deleted'
+
+if __name__ == '__main__':
+    from clime import now
