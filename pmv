@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# Power mv tool
+# can move file to not exist directory
+# or use find get file relatively path to
+# move to destination directory as same relatively path
+
+# Example
+# Quickly move android resource to another project
+#
+# Usage:
+#
+# $ pwd
+# /some/where/android/ori_project/res
+#
+# $ find . -name img* -exec pmv {} ../../dest_project/res/ \;
+# will mv /some/where/android/ori_project/res/drawable-ldpi/img to /some/where/android/dest_project/res/drawable-ldpi? y
+# will mv /some/where/android/ori_project/res/drawable-xhdpi/img to /some/where/android/dest_project/res/drawable-xhdpi? y
+# will mv /some/where/android/ori_project/res/drawable-mdpi/img to /some/where/android/dest_project/res/drawable-mdpi? y
+# will mv /some/where/android/ori_project/res/drawable-hdpi/img to /some/where/android/dest_project/res/drawable-hdpi? y
+#
+
+if [ -z $1 ]; then
+	echo missing file operand 1>&2
+	exit 1
+fi
+
+if [ -z $2 ]; then
+	echo missing destination file operand after ‘$1’ 1>&2
+	exit 1
+fi
+
+if [ ! -d $2 ]; then
+	echo destination directory not exit 1>&2
+	read -p "create? " key
+	if [ "$key" == "y" ]; then
+		mkdir -p $2
+	else
+		exit 1
+	fi
+fi
+
+src_file=$1
+
+src_full_path=`realpath $src_file`
+dirname=`dirname $src_file`
+
+cd $2
+mkdir -v -p "$dirname"
+cd $dirname
+
+read -p "will mv $src_full_path to `pwd`? " key
+
+if [ "$key" == "y" ]; then
+	mv $src_full_path .
+fi
+
