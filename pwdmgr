@@ -16,6 +16,8 @@ class PasswordManager(object):
             self.data = json.load(open(db))
         elif not os.path.exists(db):
             self.data = {'entry': []}
+            open(db, 'w+').close() # touch the file
+            os.chmod(db, 0o600)
         else:
             raise Exception('database can not be readed ({})'.format(db))
 
