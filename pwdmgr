@@ -90,6 +90,7 @@ class PasswordManager(object):
 
         entry = self.find_password(name)
         if entry:
+            password = self._pwdmgr.encode(password)
             entry[1] = password
         else:
             self.add_password(name, password)
