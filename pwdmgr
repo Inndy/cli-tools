@@ -136,13 +136,15 @@ def listall():
         print('{0:32}{1}'.format(*r))
 
 def update(name, password = None):
+    mgr = _init_password_manager()
+    if not mgr.find_password(name):
+        return 'Entry "{name}" not exists!'.format(name = name)
     if password == None:
         password = getpass.getpass('Input password: ')
         password2 = getpass.getpass('Check password: ')
         if password != password2:
             print('Password not match', file = sys.stderr)
             return 'Failed'
-    mgr = _init_password_manager()
     mgr.set_password(name, password)
     mgr.save()
     return 'Success'
