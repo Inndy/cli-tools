@@ -1,5 +1,11 @@
 # Inndy's CLI tools
 
+## License
+
+[MIT License](LICENSE)
+
+## What is this?
+
 - cat-sys-log.sh
     - Cat Linux system log in `/var/log`
 - log-cat.py
