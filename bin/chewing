@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+import sys
+
+map_0  = '1	q	a	z	2	w	s	x	'
+map_1  = 'ㄅ	ㄆ	ㄇ	ㄈ	ㄉ	ㄊ	ㄋ	ㄌ	'
+map_0 += '3	e	d	c	4	r	f	v	'
+map_1 += 'ˇ	ㄍ	ㄎ	ㄏ	ˋ	ㄐ	ㄑ	ㄒ	'
+map_0 += '5	t	g	b	6	y	h	n	'
+map_1 += 'ㄓ	ㄔ	ㄕ	ㄖ	ˊ	ㄗ	ㄘ	ㄙ	'
+map_0 += '7	u	j	m	8	i	k	,	'
+map_1 += '˙	ㄧ	ㄨ	ㄩ	ㄚ	ㄛ	ㄜ	ㄝ	'
+map_0 += '9	o	l	.	0	p	;	/	'
+map_1 += 'ㄞ	ㄟ	ㄠ	ㄡ	ㄢ	ㄣ	ㄤ	ㄥ	'
+map_0 += '-'
+map_1 += 'ㄦ'
+map_0 = map_0.replace('\t', '')
+map_1 = map_1.replace('\t', '')
+while True:
+    data = sys.stdin.read(4096)
+    if len(data) == 0:
+        break
+    buff = ''
+    for ch in data:
+        index = map_0.find(ch)
+        buff += ch if index == -1 else map_1[index]
+    sys.stdout.write(buff)

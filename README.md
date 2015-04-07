@@ -8,6 +8,8 @@
 
 - cat-sys-log.sh
     - Cat Linux system log in `/var/log`
+- chewing
+    - convert raw-keyboard-input to Bopomofo
 - log-cat.py
     - Cat `apache2` access log
 - pmv
