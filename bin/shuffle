@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+
+import sys, random
+
+input_files = []
+
+if len(sys.argv) > 1:
+    for f in sys.argv[1:]:
+        if f[0] == '-':
+            if f == '-h' or f == '--help':
+                print('Usage: {} files ...\n    or read from stdin'.format(
+                      sys.argv[0]), file = sys.stderr)
+                exit(0)
+            else:
+                print('Unknow option: ' + f, file = sys.stderr)
+                exit(1)
+        else:
+            input_files.append(open(f ,'r'))
+else:
+    input_files.append(sys.stdin)
+
+l = []
+for fobj in input_files:
+    l += fobj.readlines()
+
+length = len(l) - 1
+for i in range(length + 1):
+    r = random.randint(0, length)
+    l[i], l[r] = l[r], l[i]
+
+print(''.join(l))

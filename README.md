@@ -18,6 +18,8 @@
     - Store password hash and you can check your password
 - randomstr
     - Generate random string from `/dev/urandom`
+- shuffle
+    - Shuffle lines
 - uptime.sh
     - Print uptime in short
 - wipe
