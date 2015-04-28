@@ -10,6 +10,8 @@
     - Cat Linux system log in `/var/log`
 - chewing
     - convert raw-keyboard-input to Bopomofo
+- hex
+    - convert between raw-data and hex
 - log-cat.py
     - Cat `apache2` access log
 - pmv
