@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+
+import urllib.parse
+import sys
+
+urldecode = urllib.parse.unquote
+
+if '-h' in sys.argv or '--help' in sys.argv:
+    print("Usage: echo 'a=b&c=d' | {}".format(sys.argv[0], file=sys.stderr))
+    exit(1)
+data = sys.stdin.read().strip()
+data = ( i.split('=', 1) for i in data.split('&') )
+data = ( (urldecode(key), urldecode(value)) for key, value in data )
+data = ',\n'.join( '    %s: %s' % (repr(key), repr(value)) for key, value in data )
+print('{\n%s\n}' % data)
