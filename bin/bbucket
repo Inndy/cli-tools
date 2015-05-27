@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+function expand_reponame()
+{
+    echo "git@bitbucket.org:$1.git"
+}
+
+case "$1" in
+    -h|--help)
+        echo "Usage: $0 <command> [-h|--help]"
+        echo "super simple cli for bitbucket"
+        echo
+        echo "    commands:"
+        echo "        clone"
+        echo "        init"
+    ;;
+    clone)
+        if [ "$2" = "-h" -o "$2" = "--help" ]; then
+            echo "Usage: $0 clone \$owner/\$repo"
+            echo "Usage: $0 clone \$owner \$repo"
+            echo
+            echo "    clone repository from bitbucket"
+            exit 0
+        fi
+        if [ -z "$3" ]; then
+            repo="$2"
+        else
+            repo="$2/$3"
+        fi
+        echo "Clone repository ${repo} from bitbucket..."
+
+        git clone $(expand_reponame $repo)
+        exit $?
+    ;;
+    init)
+        if [ -z "$2" -o "$2" = "-h" -o "$2" = "--help" ]; then
+            echo "Usage: $0 init \$owner/\$repo"
+            echo "Usage: $0 init \$owner \$repo"
+            echo
+            echo "    init repository for bitbucket"
+            echo "    * but you have to create repository on bitbucket web manually *"
+            exit 0
+        fi
+        if [ -z "$3" ]; then
+            repo=(${2//\// })
+            owner="${repo[0]}"
+            reponame="${repo[1]}"
+        else
+            owner="$2"
+            reponame="$3"
+        fi
+        echo "Create repository ${reponame} for ${owner} on bitbucket..."
+
+        mkdir "${reponame}"
+        if [ $? -gt 0 ]; then
+            echo "Can not mkdir ${reponame}" >2
+            exit $?
+        fi
+        cd "${reponame}"
+        git init
+        git remote add origin $(expand_reponame "${owner}/${reponame}")
+        git remote -v
+        exit $?
+    ;;
+    *)
+        echo "Unknow command: $1"
+        exit 1
+esac

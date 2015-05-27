@@ -6,6 +6,8 @@
 
 ## What is this?
 
+- bbucket
+    - Super easy and weak bitbucket-cli
 - caesar
     - Caesar crypto
 - cat-sys-log.sh
