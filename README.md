@@ -24,6 +24,8 @@
     - pmv from @denny0223
 - pwdmgr
     - Store password hash and you can check your password
+- randombytes
+    - Generate random bytes from `/dev/urandom`
 - randomstr
     - Generate random string from `/dev/urandom`
 - shuffle

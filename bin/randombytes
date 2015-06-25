@@ -1,0 +1,30 @@
+#!/bin/bash
+
+SIZE="$1"
+FILE="$2"
+
+if [ -z "$SIZE" -o "$SIZE" = "-h" -o "$SIZE" = "--help" ]; then
+    echo "Usage: $0 bytes [file]" >&2
+    exit 1
+fi
+
+if [ "${SIZE//[0-9]}" = "" ]; then
+    if [ $SIZE -le 0 ]; then
+        echo "size must bigger than zero" >&2
+        exit 2
+    fi
+else
+    echo "size must be a positive integer" >&2
+    exit 3
+fi
+
+if [ -n "$FILE" ]; then
+    FILE="of=${FILE}"
+fi
+
+BLOCK_SIZE=32768
+BLOCKS=$(( $SIZE / $BLOCK_SIZE ))
+LEFT=$(( $SIZE % $BLOCK_SIZE ))
+
+dd if=/dev/urandom bs=$BLOCK_SIZE count=$BLOCKS $FILE 2>/dev/null
+dd if=/dev/urandom bs=$LEFT count=1 $FILE 2>/dev/null
