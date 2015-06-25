@@ -1,0 +1,45 @@
+#!/bin/bash
+
+function RND()
+{
+    echo $(($RANDOM % 65536))
+}
+
+RAND="$(printf %.4x%.4x%.4x $(RND) $(RND) $(RND))"
+export _HOME=$HOME
+export HOME=/tmp/home-$RAND
+export PS1="(vHome)$PS1"
+mkdir $HOME
+
+echo "[+] New \$HOME is $HOME"
+
+echo "[+] Copy environment"
+cd $_HOME
+
+tar -C $_HOME -c --dereference --exclude='.git' .profile .inputrc | tar -C $HOME -x
+tar -C $_HOME -c --dereference --exclude='.git' --exclude='.bash_history' .bash* | tar -C $HOME -x
+tar -C $_HOME -c --dereference --exclude='.git' --exclude='.zsh_history' .zsh* | tar -C $HOME -x
+tar -C $_HOME -c --dereference --exclude='.git' .oh-my-* | tar -C $HOME -x
+tar -C $_HOME -c --dereference --exclude='.git' .vim .vimrc | tar -C $HOME -x
+
+cd $HOME
+
+if [ -r $_HOME/.vhomerc ]; then
+    source $_HOME/.vhomerc
+fi
+
+echo "[+] Hack \$PS1"
+echo 'export PS1="(vHome)$PS1"' | tee --append $HOME/.zshrc $HOME/.bashrc
+
+echo "[+] Spawn shell"
+$SHELL
+
+if [ -z "$VHOME_AUTO_CLEANUP" ]; then
+    echo -ne "Do you want to cleanup?"
+    read ch
+fi
+
+if [ "$VHOME_AUTO_CLEANUP" = "1" -o "$ch" = "y" -o "$ch" = "Y" ]; then
+    echo "[!] Cleanup..."
+    rm -rf $HOME
+fi

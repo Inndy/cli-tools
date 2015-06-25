@@ -32,6 +32,8 @@
     - Shuffle lines
 - uptime.sh
     - Print uptime in short
+- vhome
+    - Copy your current environment into /tmp and switch to it
 - wipe
     - Wipe some files
 - x256-test.sh
