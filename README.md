@@ -18,6 +18,8 @@
     - convert between raw-data and hex
 - log-cat.py
     - Cat `apache2` access log
+- mitlicense
+    - We love MIT license, use it to generate license file
 - parse-post-data
     - Parse form-urlencoded data and output Python dict
 - pmv
