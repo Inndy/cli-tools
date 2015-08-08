@@ -16,7 +16,7 @@ echo "[+] New \$HOME is $HOME"
 echo "[+] Copy environment"
 cd $_HOME
 
-tar -C $_HOME -c --dereference --exclude='.git' .profile .inputrc | tar -C $HOME -x
+tar -C $_HOME -c --dereference --exclude='.git' .profile .inputrc .gitconfig .gitignore_ignore | tar -C $HOME -x
 tar -C $_HOME -c --dereference --exclude='.git' --exclude='.bash_history' .bash* | tar -C $HOME -x
 tar -C $_HOME -c --dereference --exclude='.git' --exclude='.zsh_history' .zsh* | tar -C $HOME -x
 tar -C $_HOME -c --dereference --exclude='.git' .oh-my-* | tar -C $HOME -x
