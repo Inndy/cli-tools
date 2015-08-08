@@ -30,6 +30,8 @@
     - Generate random string from `/dev/urandom`
 - shuffle
     - Shuffle lines
+- stars
+    - ★G☆e★t☆S★o☆m★e☆S★t☆a★r☆s★
 - uptime.sh
     - Print uptime in short
 - vhome
