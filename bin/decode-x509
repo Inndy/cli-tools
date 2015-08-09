@@ -1,0 +1,111 @@
+#!/bin/bash
+
+######################################################################
+#                                                                    #
+# From http://www.vidarholen.net/contents/junk/files/decode_rsa.bash #
+#                                                                    #
+######################################################################
+
+set -e
+
+die() {
+    echo "$@" >&2
+    exit 1
+}
+
+if [[ -z $1 ]]; then
+    echo "Usage: $0 private_rsa_key"
+    echo
+    echo "  if you have openssl, here is an alternative:"
+    echo
+    echo "    openssl rsa -text -noout < private_rsa_key"
+    echo
+    exit 1
+fi
+
+sshkey=$(< $1)
+if [[ $sshkey != "-----BEGIN RSA PRIVATE KEY-----"* ]]
+then
+    die "This does not appear to be an RSA private key"
+fi
+
+if [[ $sshkey == *ENCRYPTED* ]]
+then
+    echo "Key is encrypted, using openssl to decrypt"
+    sshkey=$(openssl rsa <<< "$sshkey")
+fi
+
+base64key=$(sed '1d; $d;' <<< "$sshkey") #the base64 data
+decdump=$(base64 -d <<< "$base64key" | od -t u1 | sed -e 's/^[^ ]*//')
+decbytes=$(echo $decdump | tr ' ' '\n') #decimal bytes, one on each line
+
+readInt() {
+    read byte
+#    echo "read type $byte" >&2
+    (( (byte & 0x1F) != 2 )) && \
+        die "$byte doesn't encode an integer :O"
+
+    length=$(readLength)
+#    echo "read length $length" >&2
+    exp="0"
+    for((i=0; i<length; i++))
+    do
+        read b || die "could only read $i of $length bytes"
+#        echo "read byte $b" >&2
+        exp="($exp)*256+$b"
+    done
+    bc <<< "$exp" | tr -d '\n\\ '
+}
+
+readLength() {
+    local bytes length n i
+    read bytes
+
+    n=$((bytes&0x7F))
+    if (( bytes & 0x80 ))
+    then
+        length=0
+        for((i=0; i<n; i++))
+        do
+            read byte
+            length=$((length*256+byte))
+        done
+        echo $length
+    else
+        echo $n
+    fi
+}
+
+(
+    read sequence # a sequence header
+    (( sequence = 0x30 )) || die "expected sequence header"
+    readLength > /dev/null # the sequence length
+    unknown=$(readInt)
+    n=$(readInt) #modulo
+    e=$(readInt) #public exponent
+    d=$(readInt) #private exponent
+    p=$(readInt) #first prime
+    q=$(readInt) #second prime
+    exp1=$(readInt) # d mod p-1
+    exp2=$(readInt) # d mod q-1
+    c=$(readInt) || c=0 # p^1 mod q
+
+    length=$(bc -l <<< "scale=20; v=l($n)/l(2); scale=1; v/1")
+    echo "# Key is $length bits long"
+    echo "# Input for bc:"
+    echo "n=$n"
+    echo "p=$p"
+    echo "q=$q"
+    echo "e=$e"
+    echo "d=$d"
+    echo "c=$c"
+    echo "exp1=$exp1"
+    echo "exp2=$exp2"
+    echo "scale=0"
+    echo "define pmod(b,e,m) { if(e == 0 ) return 1; if(e == 1) return b%m; rest=pmod(b^2%m,e/2,m); if((e%2) == 1) return (b*rest)%m else return rest;  }"
+    echo "define encrypt(message) { return pmod(message, e, n); }"
+    echo "define decrypt(message) { return pmod(message, d, n); }"
+    echo "define verify() { return n == p*q && (d*e)%((p-1)*(q-1)) == 1 && exp1 == d % (p-1) && exp2 == d % (q-1) && (c*q)%p == 1; }"
+    echo "# End bc"
+) <<< "$decbytes"
+
