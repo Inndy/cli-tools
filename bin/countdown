@@ -1,0 +1,38 @@
+#!/bin/bash
+
+if [ ! -x "$(which datediff 2>/dev/null)" ]; then
+    echo 'datediff required. execute follow command'
+    echo '  pip2 install datediff'
+    exit 1
+fi
+
+if [ -z "$1" -o "$1" = "-h" -o "$1" = "--help" ]; then
+    cat << "__EOT__"
+usage: countdown date/date-time
+
+    following format is acceptable:
+        2000/01/01
+        12:30:00
+        '2012/12/21 12:34:56'
+
+    tips:
+        watch -n0 countdown '2050/12/31 12:30:00'
+        watch -n0 countdown '12:30:00' \| figlet -w 999 -f doh
+__EOT__
+    exit
+fi
+
+S=$(datediff -S "$(date +%Y-%m-%d\ %H:%M:%S)" "$1")
+M=$(($S / 60))
+H=$(($M / 60))
+D=$(($H / 24))
+
+S=$(($S % 60))
+M=$(($M % 60))
+H=$(($H % 24))
+
+if [ $D -eq 0 ]; then
+    printf '%.2d:%.2d:%.2d' $H $M $S
+else
+    printf '%d days %.2d:%.2d:%.2d' $D $H $M $S
+fi
