@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+
+import sys
+
+def usage():
+    print('''\
+Usage: fqa [options] [files]
+
+    frequency analyze tool
+
+    files:
+        if no files present, use stdin instead.
+
+    options:
+        -s, --sort         Sort by frequency
+        -r, --reverse      Reversed output
+        -a, --ascii        Print ascii characters
+        -A, --all          Don't skip any entry''')
+
+def expand_opt(opt):
+    if opt[1] != '-':
+        return list( '-' + c for c in opt[1:] )
+    else:
+        return [opt]
+
+def check_opt(opts, *to_check):
+    return any( c in opts for c in to_check )
+
+def analyze_file(fin, freq):
+    for c in fin.read():
+        freq[c] += 1
+
+def printable(ch):
+    return chr(ch) if 0x20 <= ch <= 0x7e else '.'
+
+def print_result(freq):
+    freq = list(enumerate(freq))
+    fmt = '{byte:02x}: {count}'
+
+    if sorting:
+        freq.sort(key=lambda x: -x[1])
+    if reverse:
+        freq = freq[::-1]
+    if p_ascii:
+        fmt = '{byte:02x} ({char}): {count}'
+    if not dontskip:
+        freq = [ (v, f) for v, f in freq if f > 0 ]
+
+    for val, f in freq:
+        print(fmt.format(byte=val, char=printable(val), count=f))
+
+def main(flist):
+    freq = [0] * 256
+    if flist:
+        for f in flist:
+            with open(f, 'rb') as fin:
+                analyze_file(fin, freq)
+    else:
+        analyze_file(sys.stdin.buffer, freq)
+
+    print_result(freq)
+
+if __name__ == '__main__':
+    flist = [ i for i in sys.argv[1:] if i[0] != '-' ]
+    opts = sum( (expand_opt(i) for i in sys.argv[1:] if i[0] == '-') , [])
+
+    if check_opt(opts, '-h', '--help'):
+        usage()
+        exit()
+
+    sorting = check_opt(opts, '-s', '--sort')
+    p_ascii = check_opt(opts, '-a', '--ascii')
+    reverse = check_opt(opts, '-r', '--reverse')
+    dontskip = check_opt(opts, '-A', '--all')
+
+    main(flist)
