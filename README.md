@@ -16,6 +16,8 @@
     - convert raw-keyboard-input to Bopomofo
 - decode-x509
     - decode x509 format ssh private key, from [Vidar](http://www.vidarholen.net/contents/junk/files/decode_rsa.bash)
+- git-pusheen
+    - [git-pusheen](https://github.com/sprngr/dotfiles/blob/master/bin/git-pusheen)
 - hex
     - convert between raw-data and hex
 - log-cat.py
