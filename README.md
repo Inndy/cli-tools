@@ -34,6 +34,8 @@
     - Generate random bytes from `/dev/urandom`
 - randomstr
     - Generate random string from `/dev/urandom`
+- screen-rissi
+    - reattach or screen and then irssi
 - shuffle
     - Shuffle lines
 - stars

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ ! -x "$(which irssi 2>/dev/null)" ]; then
+    tput setaf 1
+    echo "Error: You don't have irssi!" >&2
+    exit 1
+fi
+
+screen -x -r irssi || screen -S irssi irssi
