@@ -44,6 +44,8 @@
     - Shuffle lines
 - stars
     - ★G☆e★t☆S★o☆m★e☆S★t☆a★r☆s★
+- test-tor
+    - test your tor
 - uptime.sh
     - Print uptime in short
 - vhome

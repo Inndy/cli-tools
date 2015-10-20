@@ -1,0 +1,42 @@
+#!/bin/bash
+
+function test_tor_port()
+{
+    nc -z 127.0.0.1 9050
+}
+
+function getip()
+{
+    curl -s ipinfo.io $* | grep \"ip\" | tr -d , | tr -d ' ' | tr -d \" | cut -d: -f2
+}
+
+function getip_tor()
+{
+    getip --socks5 127.0.0.1:9050
+}
+
+echo "[*] Test port (9050) ..."
+test_tor_port || (echo "[-] Tor is not listening on the port"; exit 1)
+
+echo "[*] Query your out-going IP ..."
+realIP=$(getip)
+echo "[*] Your real IP is ... $realIP"
+
+echo "[*] Query tor exit IP ..."
+torIP=$(getip_tor)
+echo "[*] Your exit IP is ... $torIP"
+
+if [ "$realIP" = "$torIP" ]; then
+    echo '[!] Warning: Your real IP and tor exit IP are exactly SAME!!!'
+    echo ''
+    echo -ne 'I GOT THAT: (YES)'
+    while true; do
+        read yes
+        if [ "$yes" = "YES" ]; then
+            exit 1
+        fi
+        echo -ne 'I KNOW THAT TOR MAY BE FAILURE (input YES, case-sensitive)'
+    done
+fi
+
+echo "[V] Cong. Your tor are working fine :)"
