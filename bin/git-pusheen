@@ -1,7 +1,7 @@
 #!/bin/bash
 # git-pusheen from https://github.com/sprngr/dotfiles/blob/master/bin/git-pusheen
 
-# Mew
+# Meow
 #   \
 #    ▐▀▄       ▄▀▌   ▄▄▄▄▄▄▄             
 #    ▌▒▒▀▄▄▄▄▄▀▒▒▐▄▀▀▒██▒██▒▀▀▄          
@@ -21,8 +21,8 @@
 
 pusheen(){
 #hehehe, cat
-cat<<"EOT"
-Mew
+cat<<"PUSHEEN"
+Meow
   \
    ▐▀▄       ▄▀▌   ▄▄▄▄▄▄▄             
    ▌  ▀▄▄▄▄▄▀  ▐▄▀▀ ██ ██ ▀▀▄          
@@ -40,7 +40,7 @@ Mew
   ▐▄                           ▄▌      
     ▀▄▄▀▀▀▀▀▄▄▀▀▀▀▀▀▀▄▄▀▀▀▀▀▄▄▀  
 
-EOT
+PUSHEEN
 }
 
 pusheen
