@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+
+import sys
+from itertools import *
+
+if '-h' in sys.argv or '--help' in sys.argv:
+    print('''\
+Usage: %s [-d]
+
+    -d  print decimal ascii code instead of hex''' % sys.argv[0])
+    exit()
+
+FORMAT_DECIMAL = '%-4d%-4s'
+FORMAT_HEX     = '%-4.2x%-4s'
+
+FORMAT = FORMAT_DECIMAL if '-d' in sys.argv else FORMAT_HEX
+
+# recipe from https://docs.python.org/3/library/itertools.html
+def grouper(iterable, n, fillvalue=None):
+    "Collect data into fixed-length chunks or blocks"
+    # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"
+    args = [iter(iterable)] * n
+    return zip_longest(*args, fillvalue=fillvalue)
+
+def transpose(a):
+    return zip(*a)
+
+specials = {
+    '\b': r'\b',
+    '\n': r'\n',
+    '\t': r'\t',
+    '\r': r'\r',
+    ' ' : "' '"
+}
+
+def expand(ascii):
+    ch = chr(ascii)
+
+    if not (0x20 < ascii < 0x7f) and ch not in specials:
+        ch = '.'
+    else:
+        ch = specials.get(ch, ch)
+
+    return FORMAT % (ascii, ch)
+
+for row in transpose(grouper(range(0, 128), 16)):
+    print(''.join(map(expand, row)))
