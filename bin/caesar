@@ -19,7 +19,10 @@ def make_caesar_cipher(n):
     d = {
         chr(ord('A') + i % 26): chr(ord('A') + (i + n) % 26) for i in range(26)
     }
-    return lambda data: ''.join(d.get(ch.upper(), ch) for ch in data)
+    d.update({
+        chr(ord('a') + i % 26): chr(ord('a') + (i + n) % 26) for i in range(26)
+    })
+    return lambda data: ''.join(d.get(ch, ch) for ch in data)
 
 cipher = make_caesar_cipher(key)
 
