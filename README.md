@@ -14,7 +14,7 @@
     - Caesar crypto
 - cat-sys-log.sh
     - Cat Linux system log in `/var/log`
-- chewing
+- chewing.py
     - convert raw-keyboard-input to Bopomofo
 - countdown
     - `countdown -h`
