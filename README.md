@@ -32,6 +32,8 @@
     - We love MIT license, use it to generate license file
 - parse-post-data
     - Parse form-urlencoded data and output Python dict
+- pinyin.py
+	- Fast lookup from chewing to pinyin
 - pmv
     - pmv from @denny0223
 - pwdmgr
