@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+
+import struct
+import sys
+
+ALL_FORMATS = [
+    'int', 'uint', 'int64', 'uint64', 'long', 'slong', 'bytes', 'bbytes',
+    'raw', 'braw', 'float', 'double'
+]
+
+def usage(prog):
+    print('''\
+Usage: {prog} <src>
+
+  src can be:
+    integer, hex integer (starts with `0x` or ended by `h`),
+    hex bytes, floating number
+'''.format(prog=prog))
+
+    '''
+  formats:
+    int     32bits signed integer
+    uint    32bits unsigned integer
+    hint    32bits unsgiend integer as hex
+    int64   64bits signed integer
+    uint64  64bits unsigned integer
+    hint64  64bits unsigned integer as hex
+    long    unsigned long integer
+    hlong   unsigned long integer as hex
+    bytes   hex-foramt bytes
+    bbytes  big-endian hex-format bytes
+    float   4-bytes floating point
+    double  8-bytes floating point
+    '''
+
+def fmt(desc, val):
+    print('  %16s: %s' % (desc, val))
+
+def dump(raw, b, from_):
+    print('Parse from %s' % from_)
+
+    fmt('user input', raw)
+
+    if len(b) >= 4:
+        i, I = struct.unpack('<iI', b[:4] * 2)
+        h = '0x%.8x' % I
+        fmt('int', str(i))
+        fmt('uint', str(i))
+        fmt('hint', h)
+
+    if len(b) >= 8:
+        l, L = struct.unpack('<qQ', b[:8] * 2)
+        H = '0x%.16x' % L
+        fmt('int64', str(l))
+        fmt('uint64', str(L))
+        fmt('hint64', H)
+
+    j = int.from_bytes(b, 'little')
+    J = int.from_bytes(b, 'big')
+    hj = '%x' % j
+    hJ = '%x' % J
+
+    fmt('long', str(j))
+    fmt('long hex', hj)
+    fmt('long (big)', str(J))
+    fmt('long hex (big)', hJ)
+
+    if len(b) == 4:
+        fmt('float', str(struct.unpack('<f', b)[0]))
+    elif len(b) == 8:
+        fmt('double', str(struct.unpack('<d', b)[0]))
+
+    fmt('raw hex', b.hex())
+
+def main(args):
+    try:
+        src, *fmts = args
+    except:
+        src, fmts = args[0], ALL_FORMATS
+
+    if src[:2] in ('0x', '0X'):
+        i = int(src[2:], 16)
+        l = (len(src) - 1) >> 1
+        dump(src, i.to_bytes(l, 'little'), 'hex integer')
+    elif src[-1] == 'h':
+        i = int(src[:-1], 16)
+        l = len(src) >> 1
+        dump(src, i.to_bytes(l, 'little'), 'hex integer')
+    elif '.' in src:
+        f = float(src)
+        dump(src, struct.pack('<f', f), 'float')
+        dump(src, struct.pack('<d', f), 'double')
+    else:
+        try:
+            s = int(src)
+            l = (len('%x' % s) + 1) >> 1
+            dump(src, s.to_bytes(l, 'little'), 'little-endian int')
+        except ValueError:
+            b = bytes.fromhex(''.join(i.zfill(2) for i in src.split()))
+            dump(src, b, 'bytes')
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        usage(sys.argv[0])
+    else:
+        main(sys.argv[1:])
